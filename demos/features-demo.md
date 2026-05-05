@@ -140,7 +140,7 @@ Fix pagination in GalleryGrid.tsx: Change startIndex from 0 to (currentPage - 1)
 
 ## 📊 Step 5: Review and Commit Your Changes
 
-### Option A: Inline AI-Powered Review 
+### Option A: Inline AI-Powered Review
 
 1. **Select generated code:** Highlight the code that was created
 2. **Open Copilot menu:** Right-click → Select "Copilot"
