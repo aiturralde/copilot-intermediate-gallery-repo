@@ -19,16 +19,12 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize from the class already applied by the inline script to avoid flash
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    }
-    return 'light';
-  });
+  // Always start with 'light' to match server-side render.
+  // The useEffect below syncs state with whatever the inline <script>
+  // in layout.tsx already applied to <html> before hydration.
+  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    // Sync state with whatever the inline script set on <html>
     const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     setTheme(current);
   }, []);
@@ -36,8 +32,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     setTheme((prev) => {
       const next: Theme = prev === 'dark' ? 'light' : 'dark';
-      if (typeof localStorage !== 'undefined') {
+      try {
         localStorage.setItem('theme', next);
+      } catch {
+        // localStorage may be unavailable in some environments
       }
       document.documentElement.classList.toggle('dark', next === 'dark');
       return next;

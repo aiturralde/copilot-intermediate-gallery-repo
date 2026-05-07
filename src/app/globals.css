@@ -12,7 +12,7 @@
   --font-sans: var(--font-geist-sans);
 }
 
-:root.dark {
+html.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
 }
