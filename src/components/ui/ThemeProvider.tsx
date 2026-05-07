@@ -19,20 +19,26 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  // Initialize from the class already applied by the inline script to avoid flash
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    }
+    return 'light';
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme') as Theme | null;
-    const initial =
-      stored ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    setTheme(initial);
-    document.documentElement.classList.toggle('dark', initial === 'dark');
+    // Sync state with whatever the inline script set on <html>
+    const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    setTheme(current);
   }, []);
 
   const toggleTheme = () => {
     setTheme((prev) => {
       const next: Theme = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('theme', next);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('theme', next);
+      }
       document.documentElement.classList.toggle('dark', next === 'dark');
       return next;
     });
