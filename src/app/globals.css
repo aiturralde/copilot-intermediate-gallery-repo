@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-/* Enable class-based dark mode for Tailwind v4 dark: utilities */
+/* Enable class-based dark mode for Tailwind v4 dark: utilities.
+   The 'dark' variant applies when an ancestor element (or the element itself)
+   has the 'dark' class, which is toggled by ThemeProvider on <html>. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {

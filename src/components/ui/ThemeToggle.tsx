@@ -22,7 +22,7 @@ export function ThemeToggle() {
       {mounted ? (
         theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />
       ) : (
-        <span className="h-5 w-5 block" />
+        <span className="h-5 w-5 block" aria-hidden="true" />
       )}
     </button>
   );
