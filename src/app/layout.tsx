@@ -49,6 +49,9 @@ export default function RootLayout({
                   <Link href="/gallery" className="nav-link">
                     Gallery
                   </Link>
+                  <Link href="/search" className="nav-link">
+                    Search
+                  </Link>
                   <Link href="/upload" className="nav-link">
                     Upload
                   </Link>
