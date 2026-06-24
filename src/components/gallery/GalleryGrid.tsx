@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Heart, Download, Share2, Eye, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Photo, mockPhotos } from '@/lib/mock-photo-data';
@@ -27,31 +27,47 @@ export function GalleryGrid({
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
 
-  // Filter photos based on selected tags and search query
-  const filteredPhotos = mockPhotos.filter(photo => {
-    // Filter by tags
-    const matchesTags = selectedTags.length === 0 || 
-      selectedTags.some(tag => photo.tags.includes(tag.toLowerCase()));
-    
-    // Filter by search query
-    const matchesSearch = searchQuery === "" ||
-      photo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      photo.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (photo.photographer && photo.photographer.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    return matchesTags && matchesSearch;
-  });
+  const normalizedSearchQuery = useMemo(
+    () => searchQuery.toLowerCase(),
+    [searchQuery]
+  );
+
+  const normalizedSelectedTags = useMemo(
+    () => selectedTags.map((tag) => tag.toLowerCase()),
+    [selectedTags]
+  );
+
+  // Filter photos only when search or selected tags actually change.
+  const filteredPhotos = useMemo(
+    () =>
+      mockPhotos.filter((photo) => {
+        const matchesTags =
+          normalizedSelectedTags.length === 0 ||
+          normalizedSelectedTags.some((tag) => photo.tags.includes(tag));
+
+        const matchesSearch =
+          normalizedSearchQuery === '' ||
+          photo.title.toLowerCase().includes(normalizedSearchQuery) ||
+          photo.tags.some((tag) => tag.includes(normalizedSearchQuery)) ||
+          (photo.photographer &&
+            photo.photographer.toLowerCase().includes(normalizedSearchQuery));
+
+        return matchesTags && matchesSearch;
+      }),
+    [normalizedSearchQuery, normalizedSelectedTags]
+  );
 
   // Calculate pagination
   const totalPhotos = filteredPhotos.length;
   const photosPerPage = limit;
-  const totalPages = Math.ceil(totalPhotos / photosPerPage);
-  const startIndex = 0;
   const endIndex = currentPage * photosPerPage;
-  const displayedPhotos = filteredPhotos.slice(startIndex, endIndex);
-  const hasMore = endIndex < totalPhotos;
+  const displayedPhotos = useMemo(
+    () => filteredPhotos.slice(0, endIndex),
+    [filteredPhotos, endIndex]
+  );
+  const hasMore = useMemo(() => endIndex < totalPhotos, [endIndex, totalPhotos]);
 
-  const toggleLike = (photoId: string) => {
+  const toggleLike = useCallback((photoId: string) => {
     setLikedPhotos(prev => {
       const newLiked = new Set(prev);
       if (newLiked.has(photoId)) {
@@ -61,7 +77,7 @@ export function GalleryGrid({
       }
       return newLiked;
     });
-  };
+  }, []);
 
   return (
     <div className={`w-full ${className}`}>
