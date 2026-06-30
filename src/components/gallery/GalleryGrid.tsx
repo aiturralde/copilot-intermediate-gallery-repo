@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { Heart, Download, Share2, Eye, Tag } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Heart, Download, Share2, Eye, Tag, MessageCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Photo, mockPhotos } from '@/lib/mock-photo-data';
+import { PhotoModal } from '@/components/gallery/PhotoModal';
 
 interface GalleryGridProps {
   limit?: number;
@@ -25,6 +26,7 @@ export function GalleryGrid({
   currentPage = 1
 }: GalleryGridProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0);
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
 
   const normalizedSearchQuery = useMemo(
@@ -109,7 +111,7 @@ export function GalleryGrid({
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300">
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
-                    onClick={() => setSelectedPhoto(photo)}
+                    onClick={() => { setSelectedPhoto(photo); setSelectedPhotoIndex(index); }}
                     className="btn-secondary"
                   >
                     View Details
@@ -169,6 +171,14 @@ export function GalleryGrid({
                     <Heart className="h-4 w-4" />
                     {photo.likes + (likedPhotos.has(photo.id) ? 1 : 0)}
                   </span>
+                  <button
+                    onClick={() => { setSelectedPhoto(photo); setSelectedPhotoIndex(index); }}
+                    className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                    aria-label={`${photo.comments?.length ?? 0} comments`}
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    {photo.comments?.length ?? 0}
+                  </button>
                   <span className="flex items-center gap-1">
                     <Eye className="h-4 w-4" />
                     {photo.views}
@@ -225,27 +235,18 @@ export function GalleryGrid({
         </div>
       )}
 
-      {/* Photo Detail Modal - Placeholder for future implementation */}
-      {selectedPhoto && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">{selectedPhoto.title}</h2>
-                <button
-                  onClick={() => setSelectedPhoto(null)}
-                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-slate-600 dark:text-slate-400">
-                Photo details and larger view would be implemented here.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Photo Detail Modal */}
+      <AnimatePresence>
+        {selectedPhoto && (
+          <PhotoModal
+            photo={selectedPhoto}
+            photoIndex={selectedPhotoIndex}
+            isLiked={likedPhotos.has(selectedPhoto.id)}
+            onClose={() => setSelectedPhoto(null)}
+            onToggleLike={toggleLike}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
